@@ -1,0 +1,266 @@
+---
+title: "Proyecto Final"
+author:
+- "Jaimes Porras Damariz"
+- "Nava Badillo Yessica Isabel"
+format: pdf
+editor: visual
+---
+
+![](imagenes/logo.png)
+
+## Introduccion
+
+**Baja California** es un estado situado en el extremo noroeste del país, en la península de Baja California. Limita al norte con **Estados Unidos**, lo que le otorga una posición estratégica para el comercio y la inversión. Su capital es **Mexicali**, mientras que **Tijuana** es la ciudad más poblada y uno de los principales centros económicos y fronterizos de México. También destacan municipios como **Ensenada**, importante por su actividad portuaria y turística.
+
+En términos generales, Baja California se caracteriza por una economía dinámica basada en la industria manufacturera de exportación, el comercio, los servicios y el turismo. Su cercanía con Estados Unidos ha favorecido el establecimiento de empresas internacionales y un constante flujo migratorio.
+
+Desde el punto de vista demográfico, el estado presenta un crecimiento poblacional significativo, impulsado principalmente por la migración interna y la movilidad laboral. La población se concentra mayoritariamente en zonas urbanas, lo que ha fortalecido el desarrollo económico, aunque también plantea retos en materia de vivienda, infraestructura y planeación urbana. Su estructura poblacional es relativamente joven, aunque, al igual que el resto del país, comienza a experimentar un proceso gradual de envejecimiento.
+
+## lectura del primer objeto de la wed
+
+Lectura de la tabla de poblacion mitad de año 2022
+
+```{r}
+# 1. Remover los objetos
+rm(list = ls())
+
+# 2. Cargar paquete
+library(data.table)
+library(knitr)        # <- para kable()
+library(kableExtra)
+library(lubridate)  # decimal_date()
+library(ggplot2)
+library(dplyr)      
+
+# 3. Descargar tablas de datos
+# pop <- fread("https://repodatos.atdt.gob.mx/CONAPO/proyecciones/00_Pob_Mitad_1950_2070.csv")
+
+(pop <- fread("data/00_Pob_Mitad_1950_2070.csv"))  # <- antes decía poblation, ahora pop
+
+# 4. Exploración de la tabla de población
+table(pop$ENTIDAD)
+table(pop$CVE_GEO)
+table(pop$ANIO)
+
+names(pop)
+sum(pop$POBLACION)
+```
+
+pirámide poblacional de BCN Conclusión comparativa: 2026 vs 2070
+
+Al comparar ambas pirámides se observa un cambio estructural importante. En 2026, Baja California presenta una población predominantemente joven-adulta, con mayor concentración en edades productivas y una base aún relativamente amplia.
+
+En contraste, la proyección para 2070 muestra una reducción clara en los grupos infantiles y un ensanchamiento significativo en edades avanzadas. La forma de la pirámide deja de ser expansiva y se aproxima a una estructura más envejecida.
+
+En conjunto, la comparación evidencia que Baja California transitará hacia un proceso de envejecimiento poblacional, lo que implicará nuevos retos en materia de empleo, seguridad social y atención a adultos mayores en el largo plazo.
+
+```{r, echo=FALSE, eval=TRUE, fig.height=7,fig.width=10}
+# ─────────────────────────────────────────────────────────────
+# Pirámide poblacional (quinquenios) — Baja California (2026)
+# ─────────────────────────────────────────────────────────────
+library(data.table)
+library(ggplot2)
+library(scales)
+
+# 1) Filtrar Baja California 2026
+bjn <- pop[ENTIDAD == "Baja California" & ANIO == 2026,
+           .(SEXO, EDAD, POBLACION)]
+
+# 2) Estandarizar sexo
+bjn[, SEXO := fifelse(grepl("Hombre", SEXO, ignore.case = TRUE),
+                      "Hombres", "Mujeres")]
+
+# 3) Asegurar EDAD numérica
+bjn[, EDAD := as.integer(EDAD)]
+
+# 4) Crear grupos quinquenales: 0-4, 5-9, ..., 80-84, 85+
+bjn[, EDAD5 := fifelse(
+  EDAD >= 85, "85+",
+  sprintf("%02d-%02d", (EDAD %/% 5) * 5, (EDAD %/% 5) * 5 + 4)
+)]
+
+# 5) Sumar población por sexo y quinquenio
+bjn5 <- bjn[, .(POBLACION = sum(POBLACION, na.rm = TRUE)), by = .(SEXO, EDAD5)]
+
+# 6) Hombres negativos, mujeres positivos
+bjn5[, POB_PIR := fifelse(SEXO == "Hombres", -POBLACION, POBLACION)]
+
+# 7) Orden correcto de los quinquenios (0-4 abajo, 85+ arriba)
+niveles_edad5 <- c(sprintf("%02d-%02d", seq(0, 80, 5), seq(4, 84, 5)), "85+")
+bjn5[, EDAD5 := factor(EDAD5, levels = niveles_edad5)]
+
+# 8) Colores
+col_rosa   <- "#7C3AED"
+col_morado <- "#FFC0CB"
+
+# 9) Límite simétrico del eje X
+lim <- max(abs(bjn5$POB_PIR), na.rm = TRUE)
+
+# 10) Gráfica
+ggplot(bjn5, aes(x = POB_PIR, y = EDAD5, fill = SEXO)) +
+  geom_col(width = 0.85, alpha = 0.95) +
+  geom_vline(xintercept = 0, linewidth = 0.6, color = "gray35") +
+  scale_fill_manual(values = c("Hombres" = col_rosa, "Mujeres" = col_morado)) +
+  scale_x_continuous(
+    limits = c(-lim, lim),
+    labels = function(x) comma(abs(x), accuracy = 1)
+  ) +
+  labs(
+    title = "Pirámide poblacional — Baja California (2026)",
+    subtitle = "Fuente: CONAPO (Población a mitad de año)",
+    x = "Población (Hombres izquierda / Mujeres derecha)",
+    y = "Grupo de edad (años)",
+    fill = ""
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(color = "gray35"),
+    legend.position = "top",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+# ─────────────────────────────────────────────────────────────
+# Pirámide poblacional (quinquenios) — Baja California (2070)
+# ─────────────────────────────────────────────────────────────
+library(data.table)
+library(ggplot2)
+library(scales)
+
+# 1) Filtrar Baja California 2070
+bjn <- pop[ENTIDAD == "Baja California" & ANIO == 2070,
+           .(SEXO, EDAD, POBLACION)]
+
+# 2) Estandarizar sexo
+bjn[, SEXO := fifelse(grepl("Hombre", SEXO, ignore.case = TRUE),
+                      "Hombres", "Mujeres")]
+
+# 3) Asegurar EDAD numérica
+bjn[, EDAD := as.integer(EDAD)]
+
+# 4) Crear grupos quinquenales: 0-4, 5-9, ..., 80-84, 85+
+bjn[, EDAD5 := fifelse(
+  EDAD >= 85, "85+",
+  sprintf("%02d-%02d", (EDAD %/% 5) * 5, (EDAD %/% 5) * 5 + 4)
+)]
+
+# 5) Sumar población por sexo y quinquenio
+bjn5 <- bjn[, .(POBLACION = sum(POBLACION, na.rm = TRUE)), by = .(SEXO, EDAD5)]
+
+# 6) Hombres negativos, mujeres positivos
+bjn5[, POB_PIR := fifelse(SEXO == "Hombres", -POBLACION, POBLACION)]
+
+# 7) Orden correcto de los quinquenios (0-4 abajo, 85+ arriba)
+niveles_edad5 <- c(sprintf("%02d-%02d", seq(0, 80, 5), seq(4, 84, 5)), "85+")
+bjn5[, EDAD5 := factor(EDAD5, levels = niveles_edad5)]
+
+# 8) Colores
+col_rosa   <- "#7C3AED"
+col_morado <- "#FFC0CB"
+
+# 9) Límite simétrico del eje X
+lim <- max(abs(bjn5$POB_PIR), na.rm = TRUE)
+
+# 10) Gráfica
+ggplot(bjn5, aes(x = POB_PIR, y = EDAD5, fill = SEXO)) +
+  geom_col(width = 0.85, alpha = 0.95) +
+  geom_vline(xintercept = 0, linewidth = 0.6, color = "gray35") +
+  scale_fill_manual(values = c("Hombres" = col_rosa, "Mujeres" = col_morado)) +
+  scale_x_continuous(
+    limits = c(-lim, lim),
+    labels = function(x) comma(abs(x), accuracy = 1)
+  ) +
+  labs(
+    title = "Pirámide poblacional — Baja California (2070)",
+    subtitle = "Fuente: CONAPO (Población a mitad de año)",
+    x = "Población (Hombres izquierda / Mujeres derecha)",
+    y = "Grupo de edad (años)",
+    fill = ""
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(color = "gray35"),
+    legend.position = "top",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+#Lectura de la tabla del mismo proyecto
+
+```{r}
+(deaths <- fread("data/Mx_ARG_GUA.CSV"))
+kable(deaths, caption = "Muertos de Argentina y Guatemala")
+
+```
+
+#Escritura de funciones
+
+```{r}
+weight_mean <-function(x,
+                       w=rep(1/length(x)
+                             ,length(x))){
+  x_mean <- sum(x*w)/sum(w)
+  return(x_mean)
+}
+
+#ejemplo
+weight_mean(c(10,40),c(.3,.7))#con pesos
+weight_mean(c(10,40))#sin pesos
+```
+
+###crecimiento exponencial
+
+```{r}
+
+
+expo <- function(K_0, K_T, t_0, t_T, t){
+  dt <- decimal_date(as.Date(t_T)) - decimal_date(as.Date(t_0))
+  r  <- log(K_T / K_0) / dt
+  h  <- t - decimal_date(as.Date(t_0))
+  K_h <- K_0 * exp(r * h)
+  return(K_h)
+}
+
+cre_exp <- expo(
+  K_0 = 112336538,
+  K_T = 126014024,
+  t_0 = "2010-06-25",
+  t_T = "2020-03-15",
+  t   = seq(2020.5, 2100.5, 1)
+)
+
+# Gráfica
+df <- data.frame(
+  Año = c(decimal_date(as.Date("2010-06-25")),
+          decimal_date(as.Date("2020-03-15")),
+          seq(2020.5, 2100.5, 1)),
+  K_t = c(112336538, 126014024, cre_exp)
+)
+
+ggplot(df, aes(Año, K_t)) +
+  geom_line() +
+  geom_point()
+```
+
+#Tasas brutas y específicas
+
+```{r}
+deaths <- deaths %>%
+  mutate(m_x = D/N)
+
+plot(deaths[location=="Argentina", x],
+     log(deaths[location=="Argentina", m_x]))
+
+#Tasa bruta de mortalidad 
+deaths %>%
+  group_by(location) %>%
+  summarise(weight_mean(m_x, x/sum(x)))
+
+
+```
