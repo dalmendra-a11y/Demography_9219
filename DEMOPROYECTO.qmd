@@ -1,266 +1,307 @@
 ---
-title: "Proyecto Final"
+title: "Construcción de tablas de vida para Baja California, 2010, 2019 y 2021"
+subtitle: "Análisis por sexo e impacto de la mortalidad durante la COVID-19"
 author:
-- "Jaimes Porras Damariz"
-- "Nava Badillo Yessica Isabel"
-format: pdf
+  - "Jaimes Porras Damariz"
+  - "Nava Badillo Yessica Isabel"
+date: today
+toc-title: "Índice"
+format:
+  pdf:
+    documentclass: scrartcl
+    pdf-engine: lualatex
+    toc: true
+    number-sections: true
+    colorlinks: true
+    fontsize: 11pt
+    geometry:
+      - top=2cm
+      - bottom=2cm
+      - left=2cm
+      - right=2cm
+execute:
+  echo: true
+  warning: false
+  message: false
 editor: visual
 ---
 
-![](imagenes/logo.png)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4.5
+)
+```
 
-## Introduccion
+# Presentación
 
-**Baja California** es un estado situado en el extremo noroeste del país, en la península de Baja California. Limita al norte con **Estados Unidos**, lo que le otorga una posición estratégica para el comercio y la inversión. Su capital es **Mexicali**, mientras que **Tijuana** es la ciudad más poblada y uno de los principales centros económicos y fronterizos de México. También destacan municipios como **Ensenada**, importante por su actividad portuaria y turística.
+En este proyecto se construyen tablas de vida para el estado de **Baja California** en los años **2010, 2019 y 2021**, separadas por sexo. La finalidad es estimar indicadores de mortalidad como las tasas específicas de mortalidad, las probabilidades de muerte, la función de sobrevivientes y la esperanza de vida al nacer.
 
-En términos generales, Baja California se caracteriza por una economía dinámica basada en la industria manufacturera de exportación, el comercio, los servicios y el turismo. Su cercanía con Estados Unidos ha favorecido el establecimiento de empresas internacionales y un constante flujo migratorio.
+El trabajo se presenta como si hubiéramos sido contratadas como consultoras de una firma actuarial. Por esta razón, no solo se reportan los resultados finales, sino que también se documenta de forma clara el procedimiento seguido: fuentes de información, limpieza de datos, fórmulas utilizadas, construcción de las tablas de vida, elaboración de gráficas y análisis de los resultados.
 
-Desde el punto de vista demográfico, el estado presenta un crecimiento poblacional significativo, impulsado principalmente por la migración interna y la movilidad laboral. La población se concentra mayoritariamente en zonas urbanas, lo que ha fortalecido el desarrollo económico, aunque también plantea retos en materia de vivienda, infraestructura y planeación urbana. Su estructura poblacional es relativamente joven, aunque, al igual que el resto del país, comienza a experimentar un proceso gradual de envejecimiento.
+Los años seleccionados permiten hacer una comparación importante. El año **2010** funciona como un punto base; **2019** representa un año previo a la pandemia, y **2021** permite observar el impacto de la COVID-19 sobre la mortalidad y la esperanza de vida.
 
-## lectura del primer objeto de la wed
+# Contexto de Baja California y su relación con la mortalidad
 
-Lectura de la tabla de poblacion mitad de año 2022
+Baja California es una entidad ubicada en el noroeste de México. Su ubicación fronteriza con Estados Unidos le da una dinámica demográfica muy particular, ya que existe una alta movilidad de personas por motivos laborales, comerciales, familiares y migratorios.
 
-```{r}
-# 1. Remover los objetos
-rm(list = ls())
+La población del estado se concentra principalmente en municipios urbanos como Tijuana, Mexicali y Ensenada. Esta concentración urbana puede influir en el comportamiento de la mortalidad, ya que modifica el acceso a servicios de salud, las condiciones de movilidad, los riesgos laborales y la exposición a causas externas como accidentes o violencia.
 
-# 2. Cargar paquete
+Además, Baja California presenta una estructura poblacional con fuerte presencia de población en edades productivas, debido en parte a la migración interna y a la actividad económica de la región. Esto es relevante porque la mortalidad no se distribuye de la misma forma en todas las edades: suele ser baja en edades infantiles y juveniles, pero aumenta de forma importante en edades adultas y avanzadas.
+
+Algunas particularidades de Baja California que pueden estar asociadas al comportamiento de la mortalidad son:
+
+- Su condición fronteriza y la alta movilidad poblacional.
+- La concentración de población en zonas urbanas.
+- La presencia de población migrante en edades laborales.
+- La importancia de riesgos asociados a causas externas, especialmente en hombres jóvenes y adultos.
+- El impacto de la pandemia de COVID-19 en 2021, principalmente en edades adultas y avanzadas.
+
+Por estas razones, el análisis de mortalidad para Baja California no debe limitarse solo al cálculo de las tablas de vida. También es importante interpretar cómo las características sociales, urbanas y demográficas del estado ayudan a explicar los cambios observados entre 2010, 2019 y 2021.
+
+# Fuentes de información
+
+Para construir las tablas de vida se utilizarán principalmente dos tipos de información:
+
+1. **Población por edad y sexo**, necesaria para aproximar la población expuesta al riesgo.
+2. **Defunciones por edad y sexo**, necesarias para calcular las tasas específicas de mortalidad.
+
+La población expuesta al riesgo se estimará mediante un procedimiento de crecimiento exponencial. Las defunciones se organizarán por entidad, año, sexo y edad para poder calcular las tasas de mortalidad correspondientes.
+
+En el repositorio de GitHub se incluirán los archivos originales, las bases limpias, los scripts de procesamiento, las gráficas generadas y el archivo final en PDF, con la finalidad de que el trabajo pueda ser replicado.
+
+# Diagrama de flujo del proceso
+
+La construcción de las tablas de vida seguirá el siguiente procedimiento general:
+
+1. Descargar y organizar las bases de población y defunciones.
+2. Limpiar nombres de variables, edades, sexo y años.
+3. Construir la población expuesta al riesgo para 2010, 2019 y 2021.
+4. Agrupar defunciones por año, sexo y edad.
+5. Calcular las tasas específicas de mortalidad.
+6. Convertir las tasas de mortalidad en probabilidades de muerte.
+7. Construir las funciones de la tabla de vida.
+8. Obtener la esperanza de vida al nacer por sexo y año.
+9. Elaborar gráficas para interpretar los resultados.
+10. Analizar el efecto de la COVID-19 en 2021.
+
+```{r diagrama-flujo, echo=FALSE, eval=FALSE}
+# En este espacio después insertaremos el diagrama de flujo.
+# Por ejemplo:
+# knitr::include_graphics("Imagenes/diagrama_flujo.png")
+```
+
+# Metodología
+
+En esta sección se presentan las fórmulas principales utilizadas para construir las tablas de vida. La idea es dejar claro qué se calculó y por qué cada paso es necesario.
+
+## Crecimiento exponencial para estimar población expuesta al riesgo
+
+Para estimar la población expuesta al riesgo se utilizará el modelo de crecimiento exponencial. Este modelo permite aproximar la población a mitad de año a partir de dos puntos de referencia.
+
+La tasa de crecimiento continuo para la edad $x$ se define como:
+
+$$
+r_x = \frac{\ln(P_x(t_2)) - \ln(P_x(t_1))}{t_2 - t_1}
+$$
+
+donde:
+
+- $P_x(t_1)$ es la población de edad $x$ en el primer momento.
+- $P_x(t_2)$ es la población de edad $x$ en el segundo momento.
+- $r_x$ es la tasa de crecimiento continuo para la edad $x$.
+
+La población estimada en el tiempo $t$ se calcula como:
+
+$$
+\widehat{P}_x(t) = P_x(t_1)e^{r_x(t-t_1)}
+$$
+
+Esta población estimada será utilizada como aproximación de la población expuesta al riesgo.
+
+## Tasa específica de mortalidad
+
+La tasa específica de mortalidad por edad se calcula como:
+
+$$
+m_x = \frac{D_x}{E_x}
+$$
+
+donde:
+
+- $D_x$ representa las defunciones observadas en la edad o grupo de edad $x$.
+- $E_x$ representa la población expuesta al riesgo en la edad o grupo de edad $x$.
+
+Esta tasa indica la intensidad de la mortalidad observada en cada edad.
+
+## Conversión de $m_x$ a $q_x$
+
+Para construir la tabla de vida se requiere convertir la tasa específica de mortalidad $m_x$ en probabilidad de muerte $q_x$. Para intervalos de amplitud $n$, se utilizará la siguiente expresión:
+
+$$
+{}_nq_x = \frac{n \cdot {}_nm_x}{1 + (n - {}_na_x){}_nm_x}
+$$
+
+donde:
+
+- ${}_nq_x$ es la probabilidad de morir entre las edades $x$ y $x+n$.
+- ${}_nm_x$ es la tasa específica de mortalidad del intervalo.
+- ${}_na_x$ es el número promedio de años vividos dentro del intervalo por quienes mueren en él.
+- $n$ es la amplitud del intervalo.
+
+## Funciones de la tabla de vida
+
+La tabla de vida se construye iniciando con una raíz:
+
+$$
+l_0 = 100000
+$$
+
+Esto significa que la tabla parte de una cohorte hipotética de 100,000 nacimientos.
+
+Las defunciones de la tabla se calculan como:
+
+$$
+d_x = l_xq_x
+$$
+
+Los sobrevivientes al inicio del siguiente intervalo se obtienen mediante:
+
+$$
+l_{x+n} = l_x - d_x
+$$
+
+Los años-persona vividos dentro del intervalo son:
+
+$$
+L_x = n l_{x+n} + a_x d_x
+$$
+
+El total de años-persona por vivir a partir de la edad $x$ es:
+
+$$
+T_x = \sum_{y \geq x} L_y
+$$
+
+Finalmente, la esperanza de vida a la edad $x$ se calcula como:
+
+$$
+e_x = \frac{T_x}{l_x}
+$$
+
+En particular, la esperanza de vida al nacer corresponde a:
+
+$$
+e_0 = \frac{T_0}{l_0}
+$$
+
+# Código utilizado
+
+En esta sección se mostrará el código empleado para limpiar las bases, calcular la población expuesta al riesgo, obtener las tasas de mortalidad y construir las tablas de vida.
+
+Para que el informe sea replicable, el código se organizará en scripts separados dentro de la carpeta `script/`.
+
+```{r paquetes-necesarios, eval=FALSE}
+# Paquetes principales que se utilizarán en el proyecto
+
 library(data.table)
-library(knitr)        # <- para kable()
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(lubridate)
+library(scales)
+library(knitr)
 library(kableExtra)
-library(lubridate)  # decimal_date()
-library(ggplot2)
-library(dplyr)      
-
-# 3. Descargar tablas de datos
-# pop <- fread("https://repodatos.atdt.gob.mx/CONAPO/proyecciones/00_Pob_Mitad_1950_2070.csv")
-
-(pop <- fread("data/00_Pob_Mitad_1950_2070.csv"))  # <- antes decía poblation, ahora pop
-
-# 4. Exploración de la tabla de población
-table(pop$ENTIDAD)
-table(pop$CVE_GEO)
-table(pop$ANIO)
-
-names(pop)
-sum(pop$POBLACION)
 ```
 
-pirámide poblacional de BCN Conclusión comparativa: 2026 vs 2070
+```{r estructura-scripts, eval=FALSE}
+# Scripts que se usarán más adelante
 
-Al comparar ambas pirámides se observa un cambio estructural importante. En 2026, Baja California presenta una población predominantemente joven-adulta, con mayor concentración en edades productivas y una base aún relativamente amplia.
-
-En contraste, la proyección para 2070 muestra una reducción clara en los grupos infantiles y un ensanchamiento significativo en edades avanzadas. La forma de la pirámide deja de ser expansiva y se aproxima a una estructura más envejecida.
-
-En conjunto, la comparación evidencia que Baja California transitará hacia un proceso de envejecimiento poblacional, lo que implicará nuevos retos en materia de empleo, seguridad social y atención a adultos mayores en el largo plazo.
-
-```{r, echo=FALSE, eval=TRUE, fig.height=7,fig.width=10}
-# ─────────────────────────────────────────────────────────────
-# Pirámide poblacional (quinquenios) — Baja California (2026)
-# ─────────────────────────────────────────────────────────────
-library(data.table)
-library(ggplot2)
-library(scales)
-
-# 1) Filtrar Baja California 2026
-bjn <- pop[ENTIDAD == "Baja California" & ANIO == 2026,
-           .(SEXO, EDAD, POBLACION)]
-
-# 2) Estandarizar sexo
-bjn[, SEXO := fifelse(grepl("Hombre", SEXO, ignore.case = TRUE),
-                      "Hombres", "Mujeres")]
-
-# 3) Asegurar EDAD numérica
-bjn[, EDAD := as.integer(EDAD)]
-
-# 4) Crear grupos quinquenales: 0-4, 5-9, ..., 80-84, 85+
-bjn[, EDAD5 := fifelse(
-  EDAD >= 85, "85+",
-  sprintf("%02d-%02d", (EDAD %/% 5) * 5, (EDAD %/% 5) * 5 + 4)
-)]
-
-# 5) Sumar población por sexo y quinquenio
-bjn5 <- bjn[, .(POBLACION = sum(POBLACION, na.rm = TRUE)), by = .(SEXO, EDAD5)]
-
-# 6) Hombres negativos, mujeres positivos
-bjn5[, POB_PIR := fifelse(SEXO == "Hombres", -POBLACION, POBLACION)]
-
-# 7) Orden correcto de los quinquenios (0-4 abajo, 85+ arriba)
-niveles_edad5 <- c(sprintf("%02d-%02d", seq(0, 80, 5), seq(4, 84, 5)), "85+")
-bjn5[, EDAD5 := factor(EDAD5, levels = niveles_edad5)]
-
-# 8) Colores
-col_rosa   <- "#7C3AED"
-col_morado <- "#FFC0CB"
-
-# 9) Límite simétrico del eje X
-lim <- max(abs(bjn5$POB_PIR), na.rm = TRUE)
-
-# 10) Gráfica
-ggplot(bjn5, aes(x = POB_PIR, y = EDAD5, fill = SEXO)) +
-  geom_col(width = 0.85, alpha = 0.95) +
-  geom_vline(xintercept = 0, linewidth = 0.6, color = "gray35") +
-  scale_fill_manual(values = c("Hombres" = col_rosa, "Mujeres" = col_morado)) +
-  scale_x_continuous(
-    limits = c(-lim, lim),
-    labels = function(x) comma(abs(x), accuracy = 1)
-  ) +
-  labs(
-    title = "Pirámide poblacional — Baja California (2026)",
-    subtitle = "Fuente: CONAPO (Población a mitad de año)",
-    x = "Población (Hombres izquierda / Mujeres derecha)",
-    y = "Grupo de edad (años)",
-    fill = ""
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold"),
-    plot.subtitle = element_text(color = "gray35"),
-    legend.position = "top",
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank()
-  )
+source("script/00_librerias.R")
+source("script/01_limpieza_poblacion.R")
+source("script/02_limpieza_defunciones.R")
+source("script/03_apv_crecimiento_exponencial.R")
+source("script/04_tablas_vida.R")
+source("script/05_graficas.R")
 ```
 
-```{r}
-# ─────────────────────────────────────────────────────────────
-# Pirámide poblacional (quinquenios) — Baja California (2070)
-# ─────────────────────────────────────────────────────────────
-library(data.table)
-library(ggplot2)
-library(scales)
+# Resultados
 
-# 1) Filtrar Baja California 2070
-bjn <- pop[ENTIDAD == "Baja California" & ANIO == 2070,
-           .(SEXO, EDAD, POBLACION)]
+En esta sección se presentarán los resultados obtenidos a partir de las tablas de vida construidas para Baja California en 2010, 2019 y 2021.
 
-# 2) Estandarizar sexo
-bjn[, SEXO := fifelse(grepl("Hombre", SEXO, ignore.case = TRUE),
-                      "Hombres", "Mujeres")]
+## Esperanza de vida al nacer por sexo y año
 
-# 3) Asegurar EDAD numérica
-bjn[, EDAD := as.integer(EDAD)]
+El primer resultado central será el cuadro con la esperanza de vida al nacer para hombres y mujeres en los años 2010, 2019 y 2021.
 
-# 4) Crear grupos quinquenales: 0-4, 5-9, ..., 80-84, 85+
-bjn[, EDAD5 := fifelse(
-  EDAD >= 85, "85+",
-  sprintf("%02d-%02d", (EDAD %/% 5) * 5, (EDAD %/% 5) * 5 + 4)
-)]
-
-# 5) Sumar población por sexo y quinquenio
-bjn5 <- bjn[, .(POBLACION = sum(POBLACION, na.rm = TRUE)), by = .(SEXO, EDAD5)]
-
-# 6) Hombres negativos, mujeres positivos
-bjn5[, POB_PIR := fifelse(SEXO == "Hombres", -POBLACION, POBLACION)]
-
-# 7) Orden correcto de los quinquenios (0-4 abajo, 85+ arriba)
-niveles_edad5 <- c(sprintf("%02d-%02d", seq(0, 80, 5), seq(4, 84, 5)), "85+")
-bjn5[, EDAD5 := factor(EDAD5, levels = niveles_edad5)]
-
-# 8) Colores
-col_rosa   <- "#7C3AED"
-col_morado <- "#FFC0CB"
-
-# 9) Límite simétrico del eje X
-lim <- max(abs(bjn5$POB_PIR), na.rm = TRUE)
-
-# 10) Gráfica
-ggplot(bjn5, aes(x = POB_PIR, y = EDAD5, fill = SEXO)) +
-  geom_col(width = 0.85, alpha = 0.95) +
-  geom_vline(xintercept = 0, linewidth = 0.6, color = "gray35") +
-  scale_fill_manual(values = c("Hombres" = col_rosa, "Mujeres" = col_morado)) +
-  scale_x_continuous(
-    limits = c(-lim, lim),
-    labels = function(x) comma(abs(x), accuracy = 1)
-  ) +
-  labs(
-    title = "Pirámide poblacional — Baja California (2070)",
-    subtitle = "Fuente: CONAPO (Población a mitad de año)",
-    x = "Población (Hombres izquierda / Mujeres derecha)",
-    y = "Grupo de edad (años)",
-    fill = ""
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold"),
-    plot.subtitle = element_text(color = "gray35"),
-    legend.position = "top",
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank()
-  )
+```{r tabla-e0, eval=FALSE}
+# Ejemplo de estructura del cuadro final:
+# e0_tabla <- lt_output[age == 0, .(year, sex, ex)]
+# kable(e0_tabla, caption = "Esperanza de vida al nacer por sexo y año")
 ```
 
-#Lectura de la tabla del mismo proyecto
+## Gráficas principales
 
-```{r}
-(deaths <- fread("data/Mx_ARG_GUA.CSV"))
-kable(deaths, caption = "Muertos de Argentina y Guatemala")
+Las gráficas que se incluirán en el informe serán seleccionadas para interpretar de manera clara la evolución de la mortalidad en Baja California.
 
+Se considerarán las siguientes:
+
+- Pirámides poblacionales.
+- Defunciones por edad y sexo.
+- Tasas específicas de mortalidad $m_x$.
+- Probabilidades de muerte $q_x$.
+- Función de sobrevivientes $l_x$.
+- Esperanza de vida al nacer por sexo y año.
+
+```{r graficas-principales, eval=FALSE}
+# Aquí se generarán o insertarán las gráficas finales.
 ```
 
-#Escritura de funciones
+# Análisis de resultados
 
-```{r}
-weight_mean <-function(x,
-                       w=rep(1/length(x)
-                             ,length(x))){
-  x_mean <- sum(x*w)/sum(w)
-  return(x_mean)
-}
+En esta sección se analizará la evolución de la mortalidad en Baja California entre 2010, 2019 y 2021. La comparación entre 2010 y 2019 permitirá observar el comportamiento previo a la pandemia, mientras que la comparación entre 2019 y 2021 permitirá identificar el efecto de la COVID-19 sobre la mortalidad.
 
-#ejemplo
-weight_mean(c(10,40),c(.3,.7))#con pesos
-weight_mean(c(10,40))#sin pesos
-```
+El análisis pondrá atención especial en:
 
-###crecimiento exponencial
+- Diferencias entre hombres y mujeres.
+- Cambios en la mortalidad por edad.
+- Comportamiento de la esperanza de vida al nacer.
+- Aumento de la mortalidad en edades adultas durante 2021.
+- Posibles efectos asociados al contexto fronterizo, urbano y migratorio de Baja California.
 
-```{r}
+# Impacto de la COVID-19 en 2021
 
+El año 2021 se analiza como un año de choque en la mortalidad. A diferencia de 2010 y 2019, que permiten observar una tendencia más regular, 2021 refleja el impacto de la pandemia de COVID-19 sobre las defunciones y la esperanza de vida.
 
-expo <- function(K_0, K_T, t_0, t_T, t){
-  dt <- decimal_date(as.Date(t_T)) - decimal_date(as.Date(t_0))
-  r  <- log(K_T / K_0) / dt
-  h  <- t - decimal_date(as.Date(t_0))
-  K_h <- K_0 * exp(r * h)
-  return(K_h)
-}
+Se espera observar un aumento de las tasas de mortalidad en edades adultas y avanzadas, así como una reducción de la esperanza de vida al nacer. También será importante revisar si el impacto fue mayor en hombres que en mujeres, ya que en muchos contextos la mortalidad masculina fue más intensa durante la pandemia.
 
-cre_exp <- expo(
-  K_0 = 112336538,
-  K_T = 126014024,
-  t_0 = "2010-06-25",
-  t_T = "2020-03-15",
-  t   = seq(2020.5, 2100.5, 1)
-)
+# Validación de resultados
 
-# Gráfica
-df <- data.frame(
-  Año = c(decimal_date(as.Date("2010-06-25")),
-          decimal_date(as.Date("2020-03-15")),
-          seq(2020.5, 2100.5, 1)),
-  K_t = c(112336538, 126014024, cre_exp)
-)
+Para revisar que las tablas de vida sean coherentes, se verificarán los siguientes puntos:
 
-ggplot(df, aes(Año, K_t)) +
-  geom_line() +
-  geom_point()
-```
+- Que las probabilidades de muerte $q_x$ estén entre 0 y 1.
+- Que la función de sobrevivientes $l_x$ sea decreciente.
+- Que la raíz de la tabla sea $l_0 = 100000$.
+- Que las defunciones $d_x$ sean no negativas.
+- Que $T_x$ sea decreciente conforme aumenta la edad.
+- Que la esperanza de vida al nacer $e_0$ coincida con el valor reportado en la primera fila de la tabla de vida.
 
-#Tasas brutas y específicas
+Esta revisión es importante porque permite detectar errores de cálculo, problemas de limpieza de datos o inconsistencias en la construcción de la tabla.
 
-```{r}
-deaths <- deaths %>%
-  mutate(m_x = D/N)
+# Conclusiones
 
-plot(deaths[location=="Argentina", x],
-     log(deaths[location=="Argentina", m_x]))
+La construcción de tablas de vida permite resumir el comportamiento de la mortalidad de una población y comparar de forma clara las diferencias por sexo y año. Para Baja California, el análisis resulta especialmente interesante por su condición fronteriza, su dinámica migratoria y su concentración urbana.
 
-#Tasa bruta de mortalidad 
-deaths %>%
-  group_by(location) %>%
-  summarise(weight_mean(m_x, x/sum(x)))
+El proyecto permitirá observar si la esperanza de vida aumentó entre 2010 y 2019 y qué tanto se redujo en 2021 como consecuencia del aumento de la mortalidad durante la pandemia. Además, al separar los resultados por sexo, se podrá analizar si los hombres presentaron una mayor afectación relativa en comparación con las mujeres.
 
+En general, este informe busca presentar un procedimiento claro, ordenado y replicable, de manera que cualquier persona pueda revisar los datos, ejecutar el código y obtener nuevamente las tablas de vida calculadas.
 
-```
+# Referencias
+
+- CONAPO. Proyecciones de la población de México y de las entidades federativas.
+- INEGI. Censo de Población y Vivienda.
+- INEGI. Estadísticas de defunciones registradas.
+- Notas de clase de Demografía.

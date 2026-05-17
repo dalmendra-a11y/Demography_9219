@@ -1,3 +1,14 @@
-.RData 
-.Rhistory 
-.Rproj.user/ 
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+*.aux
+*.log
+*.toc
+*.out
+*.tex
+*.synctex.gz
+*.knit.md
+
+DEMOPROYECTO_files/
