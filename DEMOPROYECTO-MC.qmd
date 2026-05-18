@@ -1,0 +1,306 @@
+---
+title: "Construcción de tablas de vida para Baja California, 2010, 2019 y 2021"
+subtitle: "Análisis por sexo e impacto de la mortalidad durante la COVID-19"
+author:
+  - "Jaimes Porras Damariz"
+  - "Nava Badillo Yessica Isabel"
+date: today
+format:
+  pdf:
+    documentclass: scrartcl
+    pdf-engine: lualatex
+    toc: true
+    number-sections: true
+    colorlinks: true
+    fontsize: 11pt
+    geometry:
+      - top=2cm
+      - bottom=2cm
+      - left=2cm
+      - right=2cm
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4.5
+)
+```
+
+# Presentación
+
+En este proyecto se construyen tablas de vida para el estado de **Baja California** en los años **2010, 2019 y 2021**, separadas por sexo. La finalidad es estimar indicadores de mortalidad como las tasas específicas de mortalidad, las probabilidades de muerte, la función de sobrevivientes y la esperanza de vida al nacer.
+
+El trabajo se presenta como si hubiéramos sido contratadas como consultoras de una firma actuarial. Por esta razón, no solo se reportan los resultados finales, sino que también se documenta de forma clara el procedimiento seguido: fuentes de información, limpieza de datos, fórmulas utilizadas, construcción de las tablas de vida, elaboración de gráficas y análisis de los resultados.
+
+Los años seleccionados permiten hacer una comparación importante. El año **2010** funciona como un punto base; **2019** representa un año previo a la pandemia, y **2021** permite observar el impacto de la COVID-19 sobre la mortalidad y la esperanza de vida.
+
+# Contexto de Baja California y su relación con la mortalidad
+
+Baja California es una entidad ubicada en el noroeste de México. Su ubicación fronteriza con Estados Unidos le da una dinámica demográfica muy particular, ya que existe una alta movilidad de personas por motivos laborales, comerciales, familiares y migratorios.
+
+La población del estado se concentra principalmente en municipios urbanos como Tijuana, Mexicali y Ensenada. Esta concentración urbana puede influir en el comportamiento de la mortalidad, ya que modifica el acceso a servicios de salud, las condiciones de movilidad, los riesgos laborales y la exposición a causas externas como accidentes o violencia.
+
+Además, Baja California presenta una estructura poblacional con fuerte presencia de población en edades productivas, debido en parte a la migración interna y a la actividad económica de la región. Esto es relevante porque la mortalidad no se distribuye de la misma forma en todas las edades: suele ser baja en edades infantiles y juveniles, pero aumenta de forma importante en edades adultas y avanzadas.
+
+Algunas particularidades de Baja California que pueden estar asociadas al comportamiento de la mortalidad son:
+
+-   Su condición fronteriza y la alta movilidad poblacional.
+-   La concentración de población en zonas urbanas.
+-   La presencia de población migrante en edades laborales.
+-   La importancia de riesgos asociados a causas externas, especialmente en hombres jóvenes y adultos.
+-   El impacto de la pandemia de COVID-19 en 2021, principalmente en edades adultas y avanzadas.
+
+Por estas razones, el análisis de mortalidad para Baja California no debe limitarse solo al cálculo de las tablas de vida. También es importante interpretar cómo las características sociales, urbanas y demográficas del estado ayudan a explicar los cambios observados entre 2010, 2019 y 2021.
+
+# Fuentes de información
+
+Para construir las tablas de vida se utilizarán principalmente dos tipos de información:
+
+1.  **Población por edad y sexo**, necesaria para aproximar la población expuesta al riesgo.
+2.  **Defunciones por edad y sexo**, necesarias para calcular las tasas específicas de mortalidad.
+
+La población expuesta al riesgo se estimará mediante un procedimiento de crecimiento exponencial. Las defunciones se organizarán por entidad, año, sexo y edad para poder calcular las tasas de mortalidad correspondientes.
+
+En el repositorio de GitHub se incluirán los archivos originales, las bases limpias, los scripts de procesamiento, las gráficas generadas y el archivo final en PDF, con la finalidad de que el trabajo pueda ser replicado.
+
+# Diagrama de flujo del proceso
+
+La construcción de las tablas de vida seguirá el siguiente procedimiento general:
+
+1.  Descargar y organizar las bases de población y defunciones.
+2.  Limpiar nombres de variables, edades, sexo y años.
+3.  Construir la población expuesta al riesgo para 2010, 2019 y 2021.
+4.  Agrupar defunciones por año, sexo y edad.
+5.  Calcular las tasas específicas de mortalidad.
+6.  Convertir las tasas de mortalidad en probabilidades de muerte.
+7.  Construir las funciones de la tabla de vida.
+8.  Obtener la esperanza de vida al nacer por sexo y año.
+9.  Elaborar gráficas para interpretar los resultados.
+10. Analizar el efecto de la COVID-19 en 2021.
+
+```{r diagrama-flujo, echo=FALSE, eval=FALSE}
+# En este espacio después insertaremos el diagrama de flujo.
+# Por ejemplo:
+# knitr::include_graphics("Imagenes/diagrama_flujo.png")
+```
+
+# Metodología
+
+En esta sección se presentan las fórmulas principales utilizadas para construir las tablas de vida. La idea es dejar claro qué se calculó y por qué cada paso es necesario.
+
+## Crecimiento exponencial para estimar población expuesta al riesgo
+
+Para estimar la población expuesta al riesgo se utilizará el modelo de crecimiento exponencial. Este modelo permite aproximar la población a mitad de año a partir de dos puntos de referencia.
+
+La tasa de crecimiento continuo para la edad $x$ se define como:
+
+$$
+r_x = \frac{\ln(P_x(t_2)) - \ln(P_x(t_1))}{t_2 - t_1}
+$$
+
+donde:
+
+-   $P_x(t_1)$ es la población de edad $x$ en el primer momento.
+-   $P_x(t_2)$ es la población de edad $x$ en el segundo momento.
+-   $r_x$ es la tasa de crecimiento continuo para la edad $x$.
+
+La población estimada en el tiempo $t$ se calcula como:
+
+$$
+\widehat{P}_x(t) = P_x(t_1)e^{r_x(t-t_1)}
+$$
+
+Esta población estimada será utilizada como aproximación de la población expuesta al riesgo.
+
+## Tasa específica de mortalidad
+
+La tasa específica de mortalidad por edad se calcula como:
+
+$$
+m_x = \frac{D_x}{E_x}
+$$
+
+donde:
+
+-   $D_x$ representa las defunciones observadas en la edad o grupo de edad $x$.
+-   $E_x$ representa la población expuesta al riesgo en la edad o grupo de edad $x$.
+
+Esta tasa indica la intensidad de la mortalidad observada en cada edad.
+
+## Conversión de $m_x$ a $q_x$
+
+Para construir la tabla de vida se requiere convertir la tasa específica de mortalidad $m_x$ en probabilidad de muerte $q_x$. Para intervalos de amplitud $n$, se utilizará la siguiente expresión:
+
+$$
+{}_nq_x = \frac{n \cdot {}_nm_x}{1 + (n - {}_na_x){}_nm_x}
+$$
+
+donde:
+
+-   ${}_nq_x$ es la probabilidad de morir entre las edades $x$ y $x+n$.
+-   ${}_nm_x$ es la tasa específica de mortalidad del intervalo.
+-   ${}_na_x$ es el número promedio de años vividos dentro del intervalo por quienes mueren en él.
+-   $n$ es la amplitud del intervalo.
+
+## Funciones de la tabla de vida
+
+La tabla de vida se construye iniciando con una raíz:
+
+$$
+l_0 = 100000
+$$
+
+Esto significa que la tabla parte de una cohorte hipotética de 100,000 nacimientos.
+
+Las defunciones de la tabla se calculan como:
+
+$$
+d_x = l_xq_x
+$$
+
+Los sobrevivientes al inicio del siguiente intervalo se obtienen mediante:
+
+$$
+l_{x+n} = l_x - d_x
+$$
+
+Los años-persona vividos dentro del intervalo son:
+
+$$
+L_x = n l_{x+n} + a_x d_x
+$$
+
+El total de años-persona por vivir a partir de la edad $x$ es:
+
+$$
+T_x = \sum_{y \geq x} L_y
+$$
+
+Finalmente, la esperanza de vida a la edad $x$ se calcula como:
+
+$$
+e_x = \frac{T_x}{l_x}
+$$
+
+En particular, la esperanza de vida al nacer corresponde a:
+
+$$
+e_0 = \frac{T_0}{l_0}
+$$
+
+# Código utilizado
+
+En esta sección se mostrará el código empleado para limpiar las bases, calcular la población expuesta al riesgo, obtener las tasas de mortalidad y construir las tablas de vida.
+
+Para que el informe sea replicable, el código se organizará en scripts separados dentro de la carpeta `script/`.
+
+```{r paquetes-necesarios, eval=FALSE}
+# Paquetes principales que se utilizarán en el proyecto
+
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(lubridate)
+library(scales)
+library(knitr)
+library(kableExtra)
+```
+
+```{r estructura-scripts, eval=FALSE}
+# Scripts que se usarán más adelante
+
+source("script/00_librerias.R")
+source("script/01_limpieza_poblacion.R")
+source("script/02_limpieza_defunciones.R")
+source("script/03_apv_crecimiento_exponencial.R")
+source("script/04_tablas_vida.R")
+source("script/05_graficas.R")
+```
+
+# Resultados
+
+En esta sección se presentarán los resultados obtenidos a partir de las tablas de vida construidas para Baja California en 2010, 2019 y 2021.
+
+## Esperanza de vida al nacer por sexo y año
+
+El primer resultado central será el cuadro con la esperanza de vida al nacer para hombres y mujeres en los años 2010, 2019 y 2021.
+
+```{r tabla-e0, eval=FALSE}
+# Ejemplo de estructura del cuadro final:
+# e0_tabla <- lt_output[age == 0, .(year, sex, ex)]
+# kable(e0_tabla, caption = "Esperanza de vida al nacer por sexo y año")
+```
+
+## Gráficas principales
+
+Las gráficas que se incluirán en el informe serán seleccionadas para interpretar de manera clara la evolución de la mortalidad en Baja California.
+
+Se considerarán las siguientes:
+
+-   Pirámides poblacionales.
+-   Defunciones por edad y sexo.
+-   Tasas específicas de mortalidad $m_x$.
+-   Probabilidades de muerte $q_x$.
+-   Función de sobrevivientes $l_x$.
+-   Esperanza de vida al nacer por sexo y año.
+
+```{r graficas-principales, eval=FALSE}
+# Aquí se generarán o insertarán las gráficas finales.
+```
+
+# Análisis de resultados
+
+En esta sección se analizará la evolución de la mortalidad en Baja California entre 2010, 2019 y 2021. La comparación entre 2010 y 2019 permitirá observar el comportamiento previo a la pandemia, mientras que la comparación entre 2019 y 2021 permitirá identificar el efecto de la COVID-19 sobre la mortalidad.
+
+El análisis pondrá atención especial en:
+
+-   Diferencias entre hombres y mujeres.
+-   Cambios en la mortalidad por edad.
+-   Comportamiento de la esperanza de vida al nacer.
+-   Aumento de la mortalidad en edades adultas durante 2021.
+-   Posibles efectos asociados al contexto fronterizo, urbano y migratorio de Baja California.
+
+# Impacto de la COVID-19 en 2021
+
+El año 2021 se analiza como un año de choque en la mortalidad. A diferencia de 2010 y 2019, que permiten observar una tendencia más regular, 2021 refleja el impacto de la pandemia de COVID-19 sobre las defunciones y la esperanza de vida.
+
+Se espera observar un aumento de las tasas de mortalidad en edades adultas y avanzadas, así como una reducción de la esperanza de vida al nacer. También será importante revisar si el impacto fue mayor en hombres que en mujeres, ya que en muchos contextos la mortalidad masculina fue más intensa durante la pandemia.
+
+# Validación de resultados
+
+Para revisar que las tablas de vida sean coherentes, se verificarán los siguientes puntos:
+
+-   Que las probabilidades de muerte $q_x$ estén entre 0 y 1.
+-   Que la función de sobrevivientes $l_x$ sea decreciente.
+-   Que la raíz de la tabla sea $l_0 = 100000$.
+-   Que las defunciones $d_x$ sean no negativas.
+-   Que $T_x$ sea decreciente conforme aumenta la edad.
+-   Que la esperanza de vida al nacer $e_0$ coincida con el valor reportado en la primera fila de la tabla de vida.
+
+Esta revisión es importante porque permite detectar errores de cálculo, problemas de limpieza de datos o inconsistencias en la construcción de la tabla.
+
+# Conclusiones
+
+La construcción de tablas de vida permite resumir el comportamiento de la mortalidad de una población y comparar de forma clara las diferencias por sexo y año. Para Baja California, el análisis resulta especialmente interesante por su condición fronteriza, su dinámica migratoria y su concentración urbana.
+
+El proyecto permitirá observar si la esperanza de vida aumentó entre 2010 y 2019 y qué tanto se redujo en 2021 como consecuencia del aumento de la mortalidad durante la pandemia. Además, al separar los resultados por sexo, se podrá analizar si los hombres presentaron una mayor afectación relativa en comparación con las mujeres.
+
+En general, este informe busca presentar un procedimiento claro, ordenado y replicable, de manera que cualquier persona pueda revisar los datos, ejecutar el código y obtener nuevamente las tablas de vida calculadas.
+
+# Referencias
+
+-   CONAPO. Proyecciones de la población de México y de las entidades federativas.
+-   INEGI. Censo de Población y Vivienda.
+-   INEGI. Estadísticas de defunciones registradas.
+-   Notas de clase de Demografía.
