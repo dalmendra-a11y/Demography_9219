@@ -211,7 +211,7 @@ Para asegurar que el proyecto sea replicable:
 
 ## Referencias
 
-- CONAPO. Proyecciones de la población de México y de las entidades federativas.
+
 - INEGI. Censo de Población y Vivienda.
 - INEGI. Estadísticas de defunciones registradas.
 - Notas de clase de Demografía.
