@@ -1,35 +1,101 @@
 # Construcción de tablas de vida para Baja California, 2010, 2019 y 2021
 
-Proyecto final de Demografía Actuarial para la construcción de tablas de vida por sexo para el estado de **Baja California** en los años **2010, 2019 y 2021**.
+## Descripción del proyecto
 
-El objetivo principal es estimar indicadores de mortalidad como tasas específicas de mortalidad, probabilidades de muerte, sobrevivientes, defunciones de la tabla, años-persona vividos y esperanza de vida al nacer.
+Este repositorio contiene el proyecto final de Demografía, cuyo objetivo es construir tablas de vida para el estado de **Baja California** en los años **2010, 2019 y 2021**, separadas por sexo.
 
-El análisis compara tres momentos:
+El trabajo se plantea como un informe para una firma actuarial. Por esta razón, no solo se presentan los resultados finales, sino también el procedimiento completo utilizado para obtenerlos: limpieza de datos, estimación de población expuesta al riesgo, cálculo de tasas de mortalidad, construcción de tablas de vida, elaboración de gráficas e interpretación de resultados.
 
-- **2010**, como año base.
-- **2019**, como año previo a la pandemia.
-- **2021**, como año de análisis del impacto de la COVID-19.
+El análisis compara tres momentos importantes:
+
+- **2010:** año base de comparación.
+- **2019:** año previo a la pandemia de COVID-19.
+- **2021:** año que permite observar el impacto de la pandemia sobre la mortalidad y la esperanza de vida.
 
 ## Integrantes
 
 - Jaimes Porras Damariz
 - Nava Badillo Yessica Isabel
 
-## Descripción general del proyecto
+## Entidad analizada
 
-El proyecto se plantea como un informe actuarial en el que se documenta paso a paso el procedimiento para construir tablas de vida para Baja California.
+La entidad federativa analizada es **Baja California**.
 
-El trabajo incluye:
+Se eligió esta entidad porque tiene características demográficas relevantes para el estudio de la mortalidad, entre ellas:
 
-1. Contexto demográfico de Baja California.
-2. Limpieza y organización de datos de población y defunciones.
-3. Estimación de población expuesta al riesgo.
-4. Cálculo de tasas específicas de mortalidad.
-5. Conversión de tasas de mortalidad a probabilidades de muerte.
-6. Construcción de tablas de vida.
-7. Cálculo de esperanza de vida al nacer por sexo y año.
-8. Elaboración de gráficas.
-9. Análisis del impacto de la COVID-19 en 2021.
+- Condición fronteriza con Estados Unidos.
+- Alta movilidad poblacional.
+- Concentración urbana en municipios como Tijuana, Mexicali y Ensenada.
+- Presencia importante de población en edades laborales.
+- Posible impacto diferenciado de causas externas y COVID-19 sobre la mortalidad por sexo y edad.
+
+## Objetivo general
+
+Construir y analizar tablas de vida para Baja California en 2010, 2019 y 2021 por sexo, con énfasis en la evolución de la esperanza de vida al nacer y el impacto de la COVID-19 en 2021.
+
+## Objetivos específicos
+
+- Organizar y limpiar la información de población y defunciones.
+- Estimar la población expuesta al riesgo mediante crecimiento exponencial.
+- Calcular tasas específicas de mortalidad por edad y sexo.
+- Convertir las tasas de mortalidad en probabilidades de muerte.
+- Construir tablas de vida para hombres y mujeres.
+- Obtener la esperanza de vida al nacer para cada año y sexo.
+- Elaborar gráficas de mortalidad, sobrevivencia y esperanza de vida.
+- Analizar los cambios observados entre 2010, 2019 y 2021.
+
+## Fuentes de información
+
+Para el proyecto se utilizaron fuentes de información de **INEGI**.
+
+### Población
+
+La población se obtuvo de los tabulados del:
+
+- **Censo de Población y Vivienda 2010**.
+- **Censo de Población y Vivienda 2020**.
+
+Como no existe un censo para 2019 ni para 2021, se estimó la población expuesta al riesgo mediante crecimiento exponencial por edad y sexo.
+
+### Defunciones
+
+Las defunciones se obtuvieron de las **Estadísticas de defunciones registradas** de INEGI.
+
+Para la construcción de las tablas se trabajó con defunciones por:
+
+- Año.
+- Sexo.
+- Edad.
+
+Las edades se organizaron de la siguiente manera:
+
+- Edades abiertas: 0, 1, 2, 3 y 4 años.
+- Grupos quinquenales: 5-9, 10-14, ..., 80-84.
+- Grupo abierto: 85 años y más.
+
+## Metodología general
+
+El proceso de construcción de las tablas de vida se resume en los siguientes pasos:
+
+1. Descargar y organizar los datos originales de INEGI.
+2. Limpiar la población de los censos 2010 y 2020.
+3. Estimar la población expuesta al riesgo para 2010, 2019 y 2021 mediante crecimiento exponencial.
+4. Limpiar las defunciones registradas por edad, sexo y año.
+5. Agrupar edades de forma compatible entre población y defunciones.
+6. Calcular tasas específicas de mortalidad.
+7. Convertir tasas específicas de mortalidad en probabilidades de muerte.
+8. Construir las funciones de la tabla de vida:
+   - `mx`
+   - `qx`
+   - `ax`
+   - `lx`
+   - `dx`
+   - `Lx`
+   - `Tx`
+   - `ex`
+9. Obtener la esperanza de vida al nacer.
+10. Elaborar gráficas e interpretar resultados.
+11. Analizar el impacto de la COVID-19 en 2021.
 
 ## Estructura del repositorio
 
@@ -40,178 +106,33 @@ Demography_9219/
 ├── DEMOPROYECTO.qmd
 ├── DEMOPROYECTO.pdf
 ├── Demography_9219.Rproj
-├── .gitignore
 │
 ├── data/
-│   └── Bases originales o bases de entrada
+│   ├── raw/
+│   │   ├── defunciones.xlsx
+│   │   ├── inegi_poblacion_2010.xlsx
+│   │   └── inegi_poblacion_2020.xlsx
+│   │
+│   └── clean/
+│       ├── poblacion_bc.csv
+│       ├── defunciones_bc.csv
+│       ├── lt_input_bc.csv
+│       ├── tabla_vida_bc.csv
+│       └── esperanza_vida_bc.csv
 │
-├── script/
-│   └── Scripts de limpieza, cálculo y gráficas
+├── scripts/
+│   ├── 01_limpieza_poblacion.R
+│   ├── 02_limpieza_defunciones.R
+│   ├── 03_union_apv_mx.R
+│   ├── 04_tablas_vida.R
+│   └── 05_graficas.R
 │
-├── output/
-│   └── Bases limpias y resultados generados
+├── graficas/
+│   ├── e0_bc.png
+│   ├── mx_bc.png
+│   ├── qx_bc.png
+│   ├── lx_bc.png
+│   └── impacto_covid_mx_bc.png
 │
 └── Imagenes/
-    └── Gráficas y diagrama de flujo
-```
-
-## Carpetas del proyecto
-
-### `data/`
-
-Contiene las bases originales o de entrada utilizadas para el análisis. En esta carpeta se guardan los datos de población y defunciones antes de ser procesados.
-
-### `script/`
-
-Contiene los códigos en R utilizados para limpiar datos, calcular población expuesta al riesgo, construir las tablas de vida y generar gráficas.
-
-La organización esperada de los scripts es:
-
-```text
-script/
-├── 00_librerias.R
-├── 01_limpieza_poblacion.R
-├── 02_limpieza_defunciones.R
-├── 03_apv_crecimiento_exponencial.R
-├── 04_tablas_vida.R
-├── 05_graficas.R
-└── funciones_tabla_vida.R
-```
-
-### `output/`
-
-Contiene las bases limpias y resultados generados por los scripts. Aquí se guardarán archivos como:
-
-```text
-output/
-├── poblacion_bc_limpia.csv
-├── defunciones_bc_limpia.csv
-├── apv_bc.csv
-├── lt_input_bc.csv
-├── tablas_vida_bc.csv
-└── esperanza_vida_bc.csv
-```
-
-### `Imagenes/`
-
-Contiene las gráficas utilizadas en el informe final, así como el diagrama de flujo del proceso.
-
-Ejemplos de archivos esperados:
-
-```text
-Imagenes/
-├── diagrama_flujo.png
-├── piramide_2010.png
-├── piramide_2019.png
-├── piramide_2021.png
-├── mx_bc.png
-├── qx_bc.png
-├── lx_bc.png
-└── esperanza_vida_bc.png
-```
-
-## Metodología general
-
-El procedimiento general para construir las tablas de vida es el siguiente:
-
-1. Se organizan las bases de población y defunciones.
-2. Se limpian las variables de edad, sexo, año y entidad.
-3. Se estima la población expuesta al riesgo.
-4. Se calculan las tasas específicas de mortalidad por edad y sexo.
-5. Se convierten las tasas de mortalidad en probabilidades de muerte.
-6. Se construyen las funciones de la tabla de vida.
-7. Se obtiene la esperanza de vida al nacer.
-8. Se comparan los resultados entre 2010, 2019 y 2021.
-9. Se analiza el impacto de la COVID-19 sobre la mortalidad en 2021.
-
-## Fórmulas principales
-
-La tasa específica de mortalidad se calcula como:
-
-```text
-mx = Dx / Ex
-```
-
-donde:
-
-- `Dx` representa las defunciones observadas.
-- `Ex` representa la población expuesta al riesgo.
-
-La tabla de vida parte de una raíz:
-
-```text
-l0 = 100000
-```
-
-A partir de esta raíz se calculan las funciones:
-
-```text
-dx = lx * qx
-lx+n = lx - dx
-Lx = n * lx+n + ax * dx
-Tx = suma de Lx desde la edad x hasta la última edad
-ex = Tx / lx
-```
-
-## Archivos principales
-
-### `DEMOPROYECTO.qmd`
-
-Archivo principal del informe en Quarto. Contiene el texto, las fórmulas, el código y la estructura del reporte.
-
-### `DEMOPROYECTO.pdf`
-
-Archivo final generado a partir del documento Quarto.
-
-### `Demography_9219.Rproj`
-
-Archivo del proyecto de RStudio. Se recomienda abrir este archivo antes de trabajar, para que las rutas relativas funcionen correctamente.
-
-## Cómo replicar el proyecto
-
-Para replicar el proyecto:
-
-1. Abrir el archivo `Demography_9219.Rproj` en RStudio.
-2. Verificar que las carpetas `data/`, `script/`, `output/` e `Imagenes/` estén disponibles.
-3. Ejecutar los scripts de la carpeta `script/` en orden.
-4. Abrir el archivo `DEMOPROYECTO.qmd`.
-5. Renderizar el documento en formato PDF.
-
-El orden esperado de ejecución será:
-
-```r
-source("script/00_librerias.R")
-source("script/01_limpieza_poblacion.R")
-source("script/02_limpieza_defunciones.R")
-source("script/03_apv_crecimiento_exponencial.R")
-source("script/04_tablas_vida.R")
-source("script/05_graficas.R")
-```
-
-## Resultados esperados
-
-El proyecto generará:
-
-- Tablas de vida por sexo para 2010, 2019 y 2021.
-- Cuadro de esperanza de vida al nacer por sexo y año.
-- Gráficas de mortalidad por edad.
-- Gráficas de probabilidades de muerte.
-- Gráficas de sobrevivientes.
-- Análisis del impacto de la COVID-19 en 2021.
-
-## Notas de reproducibilidad
-
-Para asegurar que el proyecto sea replicable:
-
-- Se utilizan rutas relativas.
-- Los datos originales se conservan en `data/`.
-- Las bases procesadas se guardan en `output/`.
-- Las gráficas se guardan en `Imagenes/`.
-- El informe final se genera desde `DEMOPROYECTO.qmd`.
-
-## Referencias
-
-
-- INEGI. Censo de Población y Vivienda.
-- INEGI. Estadísticas de defunciones registradas.
-- Notas de clase de Demografía.
+    └── logo.png

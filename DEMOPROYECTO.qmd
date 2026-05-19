@@ -72,7 +72,7 @@ Para construir las tablas de vida se utilizarán principalmente dos tipos de inf
 1.  **Población por edad y sexo**, necesaria para aproximar la población expuesta al riesgo.
 2.  **Defunciones por edad y sexo**, necesarias para calcular las tasas específicas de mortalidad.
 
-La población expuesta al riesgo se aproximó con la población a mitad de año publicada por CONAPO, desagregada por edad, sexo y entidad federativa. Esta base ya proporciona estimaciones anuales, por lo que para los cálculos principales no fue necesario interpolar la población.
+La población se obtuvo de los tabulados del Censo de Población y Vivienda 2010 y del Censo de Población y Vivienda 2020 de INEGI. Como no existe un censo para 2019 ni para 2021, se utilizó crecimiento exponencial por edad y sexo para estimar la población expuesta al riesgo en los años de análisis.
 
 Las defunciones se obtuvieron de las estadísticas de defunciones registradas de INEGI. Para el procesamiento, se organizaron por año, sexo y edad. Además, se dejaron abiertas las edades 0, 1, 2, 3 y 4, y posteriormente se utilizaron grupos quinquenales de 5-9 hasta 80-84, con un grupo abierto de 85 años y más.
 
@@ -92,7 +92,7 @@ En esta sección se presentan las fórmulas principales utilizadas para construi
 
 ## Población expuesta al riesgo y crecimiento exponencial
 
-Para construir las tasas de mortalidad se necesita una aproximación de la población expuesta al riesgo. En este proyecto se utilizó la población a mitad de año de CONAPO, agrupada de forma compatible con las defunciones: edades abiertas 0, 1, 2, 3 y 4; grupos quinquenales de 5-9 hasta 80-84; y grupo abierto de 85 años y más.
+Para construir las tasas de mortalidad se necesita una aproximación de la población expuesta al riesgo. En este proyecto se utilizó información poblacional de INEGI proveniente del Censo de Población y Vivienda 2010 y del Censo de Población y Vivienda 2020. Como los años de análisis son 2010, 2019 y 2021, se estimó la población por edad y sexo mediante crecimiento exponencial.
 
 Aunque en los cálculos finales se utilizó directamente la población a mitad de año, se incluye la fórmula de crecimiento exponencial porque es una herramienta útil cuando se requiere estimar población entre dos fechas censales. La tasa de crecimiento continuo para la edad $x$ se define como:
 
@@ -192,9 +192,152 @@ $$
 
 # Código utilizado
 
-Para que el proyecto sea reproducible, el código se organizó en scripts separados. Cada script corresponde a una etapa del proceso: limpieza de población, limpieza de defunciones, unión de bases, construcción de tablas de vida y elaboración de gráficas.
+Para que el proyecto sea reproducible, el código se organizó en scripts separados. Cada script corresponde a una etapa específica del proceso: limpieza de población, limpieza de defunciones, unión de bases, construcción de tablas de vida y elaboración de gráficas.
 
-```{r codigo_utilizado, eval=FALSE}
+```{r tabla_scripts, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+
+scripts_usados <- data.frame(
+  Script = c(
+    "01_limpieza_poblacion.R",
+    "02_limpieza_defunciones.R",
+    "03_union_apv_mx.R",
+    "04_tablas_vida.R",
+    "05_graficas.R"
+  ),
+  Función = c(
+    "Lee población de INEGI 2010 y 2020, agrupa edades y estima población por crecimiento exponencial.",
+    "Limpia defunciones de INEGI, deja abiertas las edades 0 a 4 y prorratea no especificados.",
+    "Une población y defunciones para calcular tasas específicas de mortalidad.",
+    "Construye las funciones de la tabla de vida y calcula esperanza de vida al nacer.",
+    "Genera las gráficas principales del informe."
+  )
+)
+
+kable(
+  scripts_usados,
+  caption = "Scripts implementados en el proyecto"
+)
+```
+
+A continuación se muestran fragmentos representativos del código utilizado. No se incluye todo el código para no saturar el informe, pero sí las partes centrales del procedimiento.
+
+## Fragmento del script de población
+
+Este fragmento muestra cómo se calcula la tasa de crecimiento exponencial y cómo se estima la población para los años de análisis.
+
+```{r codigo_poblacion, eval=FALSE}
+# Unir censos 2010 y 2020 para calcular crecimiento exponencial
+pob_base <- pob_2010 %>%
+  select(sex, age, n, pop_2010 = pop) %>%
+  inner_join(
+    pob_2020 %>% select(sex, age, n, pop_2020 = pop),
+    by = c("sex", "age", "n")
+  ) %>%
+  mutate(
+    r = log(pop_2020 / pop_2010) / (t_2020 - t_2010)
+  )
+
+# Estimar población para 2010, 2019 y 2021
+poblacion_bc <- merge(pob_base, objetivos, by = NULL) %>%
+  mutate(
+    pop = pop_2010 * exp(r * (t - t_2010)),
+    pop = round(pop, 0)
+  ) %>%
+  select(year, sex, age, n, pop)
+```
+
+## Fragmento del script de defunciones
+
+Este fragmento muestra cómo se organiza la base de defunciones y cómo se dejan separadas las edades 0, 1, 2, 3 y 4.
+
+```{r codigo_defunciones, eval=FALSE}
+mapa_edades <- tibble(
+  edad_txt = c(
+    "Menores de 1 año",
+    "1 año", "2 años", "3 años", "4 años",
+    "5-9 años", "10-14 años", "15-19 años",
+    "20-24 años", "25-29 años", "30-34 años",
+    "35-39 años", "40-44 años", "45-49 años",
+    "50-54 años", "55-59 años", "60-64 años",
+    "65-69 años", "70-74 años", "75-79 años",
+    "80-84 años", "85 años y más"
+  ),
+  age = c(
+    0, 1, 2, 3, 4,
+    5, 10, 15, 20, 25, 30, 35, 40,
+    45, 50, 55, 60, 65, 70, 75, 80, 85
+  ),
+  n = c(
+    1, 1, 1, 1, 1,
+    rep(5, 16),
+    NA
+  )
+)
+
+def_validas <- def_raw %>%
+  inner_join(mapa_edades, by = "edad_txt")
+```
+
+## Fragmento del cálculo de tasas de mortalidad
+
+Este fragmento muestra cómo se unen población y defunciones para calcular la tasa específica de mortalidad.
+
+```{r codigo_mx, eval=FALSE}
+lt_input_bc <- poblacion_bc %>%
+  left_join(
+    defunciones_bc,
+    by = c("year", "sex", "age", "n")
+  ) %>%
+  mutate(
+    mx = deaths / pop
+  ) %>%
+  arrange(year, sex, age)
+```
+
+## Fragmento de construcción de tabla de vida
+
+Este fragmento muestra las fórmulas principales usadas para calcular $q_x$, $l_x$, $d_x$, $L_x$, $T_x$ y $e_x$.
+
+```{r codigo_tabla_vida, eval=FALSE}
+datos <- datos %>%
+  arrange(age) %>%
+  mutate(
+    ax = asignar_ax(age, n),
+    qx = case_when(
+      age == 85 ~ 1,
+      TRUE ~ (n * mx) / (1 + (n - ax) * mx)
+    ),
+    qx = pmin(pmax(qx, 0), 1)
+  )
+
+lx[1] <- 100000
+
+for (i in 1:k) {
+  dx[i] <- lx[i] * datos$qx[i]
+  
+  if (i < k) {
+    lx[i + 1] <- lx[i] - dx[i]
+  }
+}
+
+for (i in 1:k) {
+  if (datos$age[i] == 85) {
+    Lx[i] <- lx[i] / datos$mx[i]
+  } else {
+    Lx[i] <- datos$n[i] * lx[i + 1] + datos$ax[i] * dx[i]
+  }
+}
+
+Tx <- rev(cumsum(rev(Lx)))
+ex <- Tx / lx
+```
+
+## Ejecución completa del proyecto
+
+El flujo completo del proyecto se ejecuta con los siguientes scripts:
+
+```{r codigo_fuente, eval=FALSE}
 source("scripts/01_limpieza_poblacion.R")
 source("scripts/02_limpieza_defunciones.R")
 source("scripts/03_union_apv_mx.R")
@@ -222,7 +365,6 @@ lt_input_bc <- fread("data/clean/lt_input_bc.csv")
 tabla_vida_bc <- fread("data/clean/tabla_vida_bc.csv")
 esperanza_vida_bc <- fread("data/clean/esperanza_vida_bc.csv")
 ```
-
 # Resultados
 
 En esta sección se presentan los principales resultados obtenidos a partir de la construcción de las tablas de vida para Baja California en los años 2010, 2019 y 2021. Los resultados se muestran por sexo, con el fin de comparar la evolución de la mortalidad masculina y femenina antes y durante el periodo asociado a la pandemia de COVID-19.
@@ -330,7 +472,8 @@ Finalmente, el proyecto quedó organizado de forma reproducible mediante datos, 
 
 # Referencias
 
--   CONAPO. Proyecciones de la población de México y de las entidades federativas.
+-   INEGI. Censo de Población y Vivienda 2010.
+-   INEGI. Censo de Población y Vivienda 2020.
 -   INEGI. Censo de Población y Vivienda.
 -   INEGI. Estadísticas de defunciones registradas.
 -   Notas de clase de Demografía.

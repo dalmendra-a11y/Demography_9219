@@ -67,7 +67,7 @@ g_mx <- ggplot(
     x = "Edad",
     y = expression(m[x]),
     color = "Sexo",
-    caption = "Fuente: elaboración propia con datos de INEGI y CONAPO."
+    caption = "Fuente: elaboración propia con datos de INEGI."
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -101,7 +101,7 @@ g_qx <- ggplot(
     x = "Edad",
     y = expression(q[x]),
     color = "Año",
-    caption = "Fuente: elaboración propia con datos de INEGI y CONAPO."
+    caption = "Fuente: elaboración propia con datos de INEGI."
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -134,7 +134,7 @@ g_lx <- ggplot(
     x = "Edad",
     y = expression(l[x]),
     color = "Año",
-    caption = "Fuente: elaboración propia con datos de INEGI y CONAPO."
+    caption = "Fuente: elaboración propia con datos de INEGI."
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -181,7 +181,7 @@ g_e0 <- ggplot(
     x = "Año",
     y = expression(e[0]),
     fill = "Sexo",
-    caption = "Fuente: elaboración propia con datos de INEGI y CONAPO."
+    caption = "Fuente: elaboración propia con datos de INEGI."
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -233,7 +233,7 @@ g_covid <- ggplot(
     x = "Edad",
     y = expression(m[x]~"2021 /"~m[x]~"2019"),
     color = "Sexo",
-    caption = "Fuente: elaboración propia con datos de INEGI y CONAPO."
+    caption = "Fuente: elaboración propia con datos de INEGI."
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -255,3 +255,5 @@ ggsave(
 
 cat("\nGráficas creadas correctamente en la carpeta graficas:\n")
 print(list.files("graficas"))
+
+
