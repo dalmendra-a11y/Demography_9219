@@ -1,8 +1,10 @@
-.Rproj.user
+# Archivos temporales de R
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
 
+# Archivos temporales de Quarto / LaTeX
 *.aux
 *.log
 *.toc
@@ -11,4 +13,15 @@
 *.synctex.gz
 *.knit.md
 
+# Carpetas generadas al renderizar
 DEMOPROYECTO_files/
+.quarto/
+*_cache/
+*_files/
+
+# Archivos HTML temporales
+README.html
+
+# Basura del sistema
+.DS_Store
+Thumbs.db.RDataTmp*
